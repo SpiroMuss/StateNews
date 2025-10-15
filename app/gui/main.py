@@ -1,17 +1,12 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QFrame
+from datetime import datetime
 
 from functions import get_clipboard_data, time_sorting
 
 
-class StartScreen(QWidget):
-    def __init__(self):
+class MainScreen(QWidget):
+    def __init__(self, switch_callback):
         super().__init__()
-        self.init_ui()
-
-    def init_ui(self):
-
-        self.setWindowTitle('State News')
-        self.setGeometry(400, 300, 1000, 600)
 
         main_layout = QVBoxLayout()
 
@@ -26,11 +21,15 @@ class StartScreen(QWidget):
 
         button_layout = QHBoxLayout()
 
+        self.settings_button = QPushButton("Настройки")
+        self.settings_button.clicked.connect(switch_callback)
+
         self.clear_button = QPushButton('Очистить')
         self.filter_button = QPushButton("Фильтровать")
         self.allocation_button = QPushButton("Распределение")
         self.timetable_button = QPushButton("Расписание")
 
+        button_layout.addWidget(self.settings_button)
         button_layout.addWidget(self.clear_button)
         button_layout.addWidget(self.filter_button)
         button_layout.addWidget(self.allocation_button)
@@ -53,6 +52,28 @@ class StartScreen(QWidget):
         if time_groups is None:
             print("Не удалось получить временные группы.")
             return
-        
 
+        for num, time_group in enumerate(time_groups):
+            frame = QFrame()
+            frame.setObjectName("group_frame")
 
+            group_layout = QVBoxLayout()
+
+            name = QTextEdit()
+            name.setText(f"Group {num}")
+            group_layout.addWidget(name)
+
+            for time in time_group:
+                line = QTextEdit()
+                line.setText(datetime.strftime(time, "%H:%M"))
+                line.setReadOnly(True)
+                group_layout.addWidget(line)
+
+            frame.setLayout(group_layout)
+            self.timetable_layout.addWidget(frame)
+
+        self.setStyleSheet('''
+            QFrame#group_frame {
+                border: 1px solid black;
+            }
+        ''')

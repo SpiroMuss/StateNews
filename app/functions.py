@@ -43,3 +43,7 @@ def time_sorting(schedule):
             print("Неотсортированная пара: ", i, j)
 
     return time_groups
+
+
+def clear_widget(widget):
+    pass
