@@ -48,9 +48,11 @@ class StartScreen(QWidget):
             self.schedule_text.setText(data)
 
 
-    def temp(self):
+    def filtering(self):
         time_groups = time_sorting(self.schedule_text.toPlainText())
         if time_groups is None:
             print("Не удалось получить временные группы.")
+            return
+        
 
 
