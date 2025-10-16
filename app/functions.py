@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from PyQt5.QtWidgets import QTextEdit
+
 from constants import constants
 
 
@@ -47,3 +49,11 @@ def time_sorting(schedule):
 
 def clear_widget(widget):
     pass
+
+
+def show_config_items(array, layout):
+    for item in array:
+        text = QTextEdit()
+        text.setText(item)
+        text.setReadOnly(True)
+        layout.addWidget(text)

@@ -8,8 +8,10 @@ class Constants:
 
 
     def reload_constants(self):
-        self.config = json.load(open('config.json'))
+        self.config = json.load(open('config.json', encoding='utf-8'))
         self.staff = self.config.get("STAFF")
+        self.activity = self.config.get("ACTIVITY")
+        self.list_marks = self.config.get("LIST_MARKS")
 
     def upload_system(self):
         try:
