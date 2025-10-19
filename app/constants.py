@@ -20,5 +20,11 @@ class Constants:
         except ImportError:
             self.system = None
 
+    def delete_constant(self):
+        pass
+
+    def commit(self):
+        json.dump(self.config, open("config.json", "w"), ensure_ascii=False, indent=2)
+
 
 constants = Constants()

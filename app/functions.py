@@ -49,35 +49,3 @@ def time_sorting(schedule):
 
 def clear_widget(widget):
     pass
-
-
-def show_config_items(array, layout):
-    for item in array:
-        item_frame = QFrame()
-        item_frame.setObjectName("item_frame")
-        item_layout = QHBoxLayout(item_frame)
-
-        text = QTextEdit()
-        text.setText(item)
-        text.setReadOnly(True)
-        item_layout.addWidget(text)
-
-        edit_button = QPushButton("Изменить")
-        edit_button.clicked.connect(lambda: 1)
-        item_layout.addWidget(edit_button)
-
-        delete_button = QPushButton("Удалить")
-        delete_button.clicked.connect(partial(delete_constant, delete_button.parent()))
-        item_layout.addWidget(delete_button)
-
-        layout.addWidget(item_frame)
-
-
-
-def edit_constant():
-    pass
-
-
-def delete_constant(frame):
-    children = frame.children()
-    
