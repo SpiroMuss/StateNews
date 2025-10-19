@@ -1,7 +1,8 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QFrame
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QFrame, QComboBox
 from datetime import datetime
 
 from functions import get_clipboard_data, time_sorting
+from constants import constants
 
 
 class MainScreen(QWidget):
@@ -11,13 +12,14 @@ class MainScreen(QWidget):
         main_layout = QVBoxLayout()
 
         text_layout = QHBoxLayout()
+
         self.schedule_text = QTextEdit()
+        text_layout.addWidget(self.schedule_text)
 
         self.timetable_layout = QVBoxLayout()
-
-
-        text_layout.addWidget(self.schedule_text)
         text_layout.addLayout(self.timetable_layout)
+
+        main_layout.addLayout(text_layout)
 
         button_layout = QHBoxLayout()
 
@@ -35,7 +37,6 @@ class MainScreen(QWidget):
         button_layout.addWidget(self.allocation_button)
         button_layout.addWidget(self.timetable_button)
 
-        main_layout.addLayout(text_layout)
         main_layout.addLayout(button_layout)
 
         self.setLayout(main_layout)
@@ -59,8 +60,12 @@ class MainScreen(QWidget):
 
             group_layout = QVBoxLayout()
 
-            name = QTextEdit()
-            name.setText(f"Group {num}")
+            name = QComboBox()
+            name.addItems(constants.activity)
+            if len(time_group) > 1:
+                name.setCurrentIndex(0)
+            elif len(time_group) == 1:
+                name.setCurrentIndex(1)
             group_layout.addWidget(name)
 
             for time in time_group:
