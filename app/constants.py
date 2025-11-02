@@ -24,7 +24,7 @@ class Constants:
         pass
 
     def commit(self):
-        json.dump(self.config, open("config.json", "w"), ensure_ascii=False, indent=2)
+        json.dump(self.config, open("config.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 
 
 constants = Constants()

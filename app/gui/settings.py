@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTextEdit, QFrame, QScrollArea
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTextEdit, QFrame, QScrollArea, QLabel
 from functools import partial
 from pprint import pprint as pp
 
@@ -17,29 +17,24 @@ class SettingsScreen(QWidget):
         settings_widget = QWidget()
         settings_layout = QHBoxLayout(settings_widget)
 
-        self.constant_buttons = {
-            "staff": [],
-            "list_marks": [],
-            "activity": []
-        }
+        self.staff_frame = None
+        self.list_mark_frame = None
+        self.activity_frame = None
 
-        staff_frame = QFrame()
-        staff_frame.setObjectName("group_frame")
-        staff_layout = QVBoxLayout(staff_frame)
-        self.show_config_items(constants.staff, staff_layout, self.constant_buttons.get("staff"))
-        settings_layout.addWidget(staff_frame)
+        for category, const_frame in zip([constants.staff, constants.list_marks, constants.activity],
+                                        [self.staff_frame, self.list_mark_frame, self.activity_frame]):
+            frame = QFrame()
+            frame.setObjectName("group_frame")
+            layout = QVBoxLayout(frame)
+            for constant in category:
+                layout.addWidget(self.get_config_item(constant))
+            add_item_button = QPushButton("Добавить")
+            add_item_button.clicked.connect(partial(self.add_constant, category, layout))
+            layout.addWidget(add_item_button)
+            settings_layout.addWidget(frame)
+            const_frame = frame
 
-        list_marks_frame = QFrame()
-        list_marks_frame.setObjectName("group_frame")
-        list_marks_layout = QVBoxLayout(list_marks_frame)
-        self.show_config_items(constants.list_marks, list_marks_layout, self.constant_buttons.get("list_marks"))
-        settings_layout.addWidget(list_marks_frame)
-
-        activity_frame = QFrame()
-        activity_frame.setObjectName("group_frame")
-        activity_layout = QVBoxLayout(activity_frame)
-        self.show_config_items(constants.activity, activity_layout, self.constant_buttons.get("activity"))
-        settings_layout.addWidget(activity_frame)
+        pp(self.staff_frame)
 
         scroll_area.setWidget(settings_widget)
         main_layout.addWidget(scroll_area)
@@ -64,41 +59,53 @@ class SettingsScreen(QWidget):
                 ''')
 
 
-    def show_config_items(self, array, layout, button_list):
-        for item in array:
-            item_frame = QFrame()
-            item_frame.setObjectName("item_frame")
+    def get_config_item(self, item):
+        frame = QFrame()
+        frame.setObjectName("item_frame")
 
-            item_layout = QHBoxLayout(item_frame)
+        layout = QHBoxLayout(frame)
 
-            text = QTextEdit()
-            text.setText(item)
-            text.setReadOnly(True)
-            item_layout.addWidget(text)
+        text = QTextEdit()
+        text.setText(item)
+        text.setReadOnly(True)
+        layout.addWidget(text)
 
-            edit_button = QPushButton("Изменить")
-            edit_button.clicked.connect(partial(self.edit_constant, edit_button))
-            button_list.append(edit_button)
-            item_layout.addWidget(edit_button)
+        edit_button = QPushButton("Изменить")
+        edit_button.clicked.connect(partial(self.edit_constant, edit_button))
+        layout.addWidget(edit_button)
 
-            delete_button = QPushButton("Удалить")
-            delete_button.clicked.connect(partial(self.delete_constant, delete_button))
-            button_list.append(delete_button)
-            item_layout.addWidget(delete_button)
+        delete_button = QPushButton("Удалить")
+        delete_button.clicked.connect(partial(self.delete_constant, delete_button))
+        layout.addWidget(delete_button)
 
-            layout.addWidget(item_frame)
+        return frame
 
 
-    def edit_constant(self, btn):
-        pass
-
+    def edit_constant(self, button):
+        frame = button.parent()
+        children = frame.children()
+        text = children[1]
+        text.setReadOnly(False)
+        for btn in children[2:]:
+            btn.deleteLater()
+        accept_button = QPushButton("Готово")
+        accept_button.clicked.connect(lambda: 1)
+        frame.addWidget(accept_button)
+        cancel_button = QPushButton("Отмена")
+        cancel_button.clicked.connect(lambda: 2)
+        frame.addWidget(cancel_button)
 
 
     def delete_constant(self, btn):
         frame = btn.parent()
         children = frame.children()
         text = children[1]
-        if btn in self.constant_buttons.get("staff"):
+        if btn in self.constant_buttons.get("staff") and text.toPlainText() in constants.staff:
             constants.staff.remove(text.toPlainText())
             constants.commit()
-        # Сделать удаление из GUI
+        frame.deleteLater()
+
+
+    def add_constant(self, constant_array, layout):
+        frame = self.get_config_item("")
+        layout.insertWidget(layout.count() - 1, frame)
