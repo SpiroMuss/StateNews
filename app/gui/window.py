@@ -4,7 +4,7 @@ from app.gui.main import MainScreen
 from app.gui.settings import SettingsScreen
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow): # Окно приложения
     def __init__(self):
         super().__init__()
         self.setWindowTitle('State News Filter')
@@ -15,7 +15,6 @@ class MainWindow(QMainWindow):
 
         self.main_screen = MainScreen(self.switch_to_settings)
         self.main_screen.get_raw_text()
-        self.main_screen.filtering()
         self.stacked_widget.addWidget(self.main_screen)
 
         self.settings_screen = SettingsScreen(self.switch_to_main)

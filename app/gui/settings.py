@@ -66,7 +66,7 @@ def add_config_item(category, layout): # Добавить новый элеме�
     category.append(ci)
 
 
-class SettingsScreen(QWidget):
+class SettingsScreen(QWidget): # Экран настройки приложения
     def __init__(self, switch_callback):
         super().__init__()
 

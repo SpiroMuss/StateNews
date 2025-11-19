@@ -5,7 +5,7 @@ from functions import get_clipboard_data, time_sorting
 from app.config import system, config
 
 
-class MainScreen(QWidget):
+class MainScreen(QWidget): # Главный экрын приложения
     def __init__(self, switch_callback):
         super().__init__()
 
@@ -16,8 +16,10 @@ class MainScreen(QWidget):
         self.schedule_text = QTextEdit()
         text_layout.addWidget(self.schedule_text)
 
+        self.timetable_frame = QFrame()
         self.timetable_layout = QVBoxLayout()
-        text_layout.addLayout(self.timetable_layout)
+        self.timetable_frame.setLayout(self.timetable_layout)
+        text_layout.addWidget(self.timetable_frame)
 
         main_layout.addLayout(text_layout)
 
@@ -25,30 +27,35 @@ class MainScreen(QWidget):
 
         self.settings_button = QPushButton("Настройки")
         self.settings_button.clicked.connect(switch_callback)
+        button_layout.addWidget(self.settings_button)
 
         self.clear_button = QPushButton('Очистить')
-        self.filter_button = QPushButton("Фильтровать")
-        self.allocation_button = QPushButton("Распределение")
-        self.timetable_button = QPushButton("Расписание")
-
-        button_layout.addWidget(self.settings_button)
+        self.clear_button.clicked.connect(self.clear_schedule)
         button_layout.addWidget(self.clear_button)
+
+        self.filter_button = QPushButton("Фильтровать")
+        self.filter_button.clicked.connect(self.filter_schedule)
         button_layout.addWidget(self.filter_button)
+
+        self.allocation_button = QPushButton("Распределение")
+        self.allocation_button.clicked.connect(self.copy_allocation)
         button_layout.addWidget(self.allocation_button)
+
+        self.timetable_button = QPushButton("Расписание")
         button_layout.addWidget(self.timetable_button)
 
         main_layout.addLayout(button_layout)
 
         self.setLayout(main_layout)
 
+    def clear_schedule(self): # Очистка главного экрана от текста
+        self.schedule_text.setText('')
+        for frame in self.timetable_frame.children()[1:]:
+            frame.deleteLater()
 
-    def get_raw_text(self):
-        data = get_clipboard_data()
-        if data is not None:
-            self.schedule_text.setText(data)
-
-
-    def filtering(self):
+    def filter_schedule(self): # Фильтрация расписания согласно конфигу
+        for frame in self.timetable_frame.children()[1:]:
+            frame.deleteLater()
         time_groups = time_sorting(self.schedule_text.toPlainText())
         if time_groups is None:
             print("Не удалось получить временные группы.")
@@ -82,3 +89,12 @@ class MainScreen(QWidget):
                 border: 1px solid black;
             }
         ''')
+
+    def copy_allocation(self):
+        pass
+
+    def get_raw_text(self):
+        data = get_clipboard_data()
+        if data is not None:
+            self.schedule_text.setText(data)
+            self.filter_schedule()
