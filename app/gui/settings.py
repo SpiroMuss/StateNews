@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTex
 from functools import partial
 from pprint import pprint as pp
 
-from app.constants import constants
+from app.config import system, config
 
 
 class SettingsScreen(QWidget):
@@ -21,13 +21,13 @@ class SettingsScreen(QWidget):
         self.list_mark_frame = None
         self.activity_frame = None
 
-        for category, const_frame in zip([constants.staff, constants.list_marks, constants.activity],
+        for category, const_frame in zip(config.keys(),
                                         [self.staff_frame, self.list_mark_frame, self.activity_frame]):
             frame = QFrame()
             frame.setObjectName("group_frame")
             layout = QVBoxLayout(frame)
-            for constant in category:
-                layout.addWidget(self.get_config_item(constant))
+            for config_item in config.get(category):
+                layout.addWidget(self.get_config_item(config_item))
             add_item_button = QPushButton("Добавить")
             add_item_button.clicked.connect(partial(self.add_constant, category, layout))
             layout.addWidget(add_item_button)
@@ -59,14 +59,14 @@ class SettingsScreen(QWidget):
                 ''')
 
 
-    def get_config_item(self, item):
+    def get_config_item(self, item): # Создание элемента из конфига
         frame = QFrame()
         frame.setObjectName("item_frame")
 
         layout = QHBoxLayout(frame)
 
         text = QTextEdit()
-        text.setText(item)
+        text.setText(item.item)
         text.setReadOnly(True)
         layout.addWidget(text)
 
@@ -97,13 +97,14 @@ class SettingsScreen(QWidget):
 
 
     def delete_constant(self, btn):
-        frame = btn.parent()
-        children = frame.children()
-        text = children[1]
-        if btn in self.constant_buttons.get("staff") and text.toPlainText() in constants.staff:
-            constants.staff.remove(text.toPlainText())
-            constants.commit()
-        frame.deleteLater()
+        # frame = btn.parent()
+        # children = frame.children()
+        # text = children[1]
+        # if btn in self.constant_buttons.get("staff") and text.toPlainText() in constants.staff:
+        #     constants.staff.remove(text.toPlainText())
+        #     constants.commit()
+        # frame.deleteLater()
+        pass
 
 
     def add_constant(self, constant_array, layout):

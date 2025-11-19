@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushB
 from datetime import datetime
 
 from functions import get_clipboard_data, time_sorting
-from constants import constants
+from app.config import system, config
 
 
 class MainScreen(QWidget):
@@ -61,7 +61,7 @@ class MainScreen(QWidget):
             group_layout = QVBoxLayout()
 
             name = QComboBox()
-            name.addItems(constants.activity)
+            name.addItems(item.item for item in config.get('ACTIVITY'))
             if len(time_group) > 1:
                 name.setCurrentIndex(0)
             elif len(time_group) == 1:

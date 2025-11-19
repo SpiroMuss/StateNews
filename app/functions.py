@@ -2,7 +2,7 @@ from datetime import datetime
 from PyQt5.QtWidgets import QTextEdit, QHBoxLayout, QPushButton, QFrame
 from functools import partial
 
-from constants import constants
+from config import config
 
 
 def get_clipboard_data():
@@ -25,8 +25,8 @@ def time_sorting(schedule):
 
     # Поиск времени
     for line in schedule.split('\n'):
-        for employee in constants.staff:
-            if line.rfind(employee) != -1:
+        for employee in config.get('STAFF'):
+            if line.rfind(employee.item) != -1:
                 timetable.append(datetime.strptime(line[0:11], "%d.%m %H:%M"))
 
     # Разделение на группы
