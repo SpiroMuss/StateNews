@@ -61,7 +61,7 @@ class MainScreen(QWidget):
             group_layout = QVBoxLayout()
 
             name = QComboBox()
-            name.addItems(item.item for item in config.get('ACTIVITY'))
+            name.addItems(config.get('ACTIVITY'))
             if len(time_group) > 1:
                 name.setCurrentIndex(0)
             elif len(time_group) == 1:

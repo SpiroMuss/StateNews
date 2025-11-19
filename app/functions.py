@@ -4,7 +4,6 @@ from functools import partial
 
 from config import config
 
-
 def get_clipboard_data():
     data = None
     # if constants.system == 'WINDOWS':
@@ -26,7 +25,7 @@ def time_sorting(schedule):
     # Поиск времени
     for line in schedule.split('\n'):
         for employee in config.get('STAFF'):
-            if line.rfind(employee.item) != -1:
+            if line.rfind(employee) != -1:
                 timetable.append(datetime.strptime(line[0:11], "%d.%m %H:%M"))
 
     # Разделение на группы
@@ -45,7 +44,3 @@ def time_sorting(schedule):
             print("Неотсортированная пара: ", i, j)
 
     return time_groups
-
-
-def clear_widget(widget):
-    pass

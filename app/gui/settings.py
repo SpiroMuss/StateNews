@@ -1,8 +1,69 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTextEdit, QFrame, QScrollArea, QLabel
 from functools import partial
-from pprint import pprint as pp
 
-from app.config import system, config
+from app.config import config
+
+
+class ConfigItem(QFrame): # Элемент конфигурации
+    def __init__(self, item = ""):
+        super().__init__()
+        self.setObjectName("Config item frame")
+        self.layout = QHBoxLayout(self)
+        self.item = item
+        self.active = True
+
+        self.text = QTextEdit(item)
+        self.layout.addWidget(self.text)
+
+        self.edit_btn = QPushButton("Изменить")
+        self.edit_btn.clicked.connect(self.editable)
+        self.layout.addWidget(self.edit_btn)
+
+        self.delete_btn = QPushButton("Удалить")
+        self.delete_btn.clicked.connect(self.delete)
+        self.layout.addWidget(self.delete_btn)
+
+        self.cancel_btn = QPushButton("Отмена")
+        self.cancel_btn.clicked.connect(self.cancel)
+        self.layout.addWidget(self.cancel_btn)
+
+        self.accept_btn = QPushButton("Подтвердить")
+        self.accept_btn.clicked.connect(self.accept)
+        self.layout.addWidget(self.accept_btn)
+
+    def editable(self):
+        self.text.setReadOnly(False)
+        self.edit_btn.hide()
+        self.delete_btn.hide()
+        self.cancel_btn.show()
+        self.accept_btn.show()
+
+    def static(self):
+        self.text.setReadOnly(True)
+        self.edit_btn.show()
+        self.delete_btn.show()
+        self.cancel_btn.hide()
+        self.accept_btn.hide()
+
+    def cancel(self):
+        self.text.setText(self.item)
+        self.static()
+
+    def accept(self):
+        self.item = self.text.toPlainText()
+        self.static()
+
+    def delete(self):
+        self.active = False
+        self.hide()
+        self.deleteLater()
+
+
+def add_config_item(category, layout): # Добавить новый элемент конфигурации
+    ci = ConfigItem()
+    ci.editable()
+    layout.insertWidget(layout.count() - 1, ci)
+    category.append(ci)
 
 
 class SettingsScreen(QWidget):
@@ -17,24 +78,24 @@ class SettingsScreen(QWidget):
         settings_widget = QWidget()
         settings_layout = QHBoxLayout(settings_widget)
 
-        self.staff_frame = None
-        self.list_mark_frame = None
-        self.activity_frame = None
+        self.staff = []
+        self.list_marks = []
+        self.activities = []
 
-        for category, const_frame in zip(config.keys(),
-                                        [self.staff_frame, self.list_mark_frame, self.activity_frame]):
+        for category, cat in zip(config.keys(),
+                                 [self.staff, self.list_marks, self.activities]):
             frame = QFrame()
             frame.setObjectName("group_frame")
             layout = QVBoxLayout(frame)
-            for config_item in config.get(category):
-                layout.addWidget(self.get_config_item(config_item))
-            add_item_button = QPushButton("Добавить")
-            add_item_button.clicked.connect(partial(self.add_constant, category, layout))
-            layout.addWidget(add_item_button)
+            for item in config.get(category):
+                ci = ConfigItem(item)
+                ci.static()
+                layout.addWidget(ci)
+                cat.append(ci)
+            add_item_btn = QPushButton("Добавить")
+            add_item_btn.clicked.connect(partial(add_config_item, cat, layout))
+            layout.addWidget(add_item_btn)
             settings_layout.addWidget(frame)
-            const_frame = frame
-
-        pp(self.staff_frame)
 
         scroll_area.setWidget(settings_widget)
         main_layout.addWidget(scroll_area)
@@ -57,56 +118,3 @@ class SettingsScreen(QWidget):
                         border: 2px solid black;
                     }
                 ''')
-
-
-    def get_config_item(self, item): # Создание элемента из конфига
-        frame = QFrame()
-        frame.setObjectName("item_frame")
-
-        layout = QHBoxLayout(frame)
-
-        text = QTextEdit()
-        text.setText(item.item)
-        text.setReadOnly(True)
-        layout.addWidget(text)
-
-        edit_button = QPushButton("Изменить")
-        edit_button.clicked.connect(partial(self.edit_constant, edit_button))
-        layout.addWidget(edit_button)
-
-        delete_button = QPushButton("Удалить")
-        delete_button.clicked.connect(partial(self.delete_constant, delete_button))
-        layout.addWidget(delete_button)
-
-        return frame
-
-
-    def edit_constant(self, button):
-        frame = button.parent()
-        children = frame.children()
-        text = children[1]
-        text.setReadOnly(False)
-        for btn in children[2:]:
-            btn.deleteLater()
-        accept_button = QPushButton("Готово")
-        accept_button.clicked.connect(lambda: 1)
-        frame.addWidget(accept_button)
-        cancel_button = QPushButton("Отмена")
-        cancel_button.clicked.connect(lambda: 2)
-        frame.addWidget(cancel_button)
-
-
-    def delete_constant(self, btn):
-        # frame = btn.parent()
-        # children = frame.children()
-        # text = children[1]
-        # if btn in self.constant_buttons.get("staff") and text.toPlainText() in constants.staff:
-        #     constants.staff.remove(text.toPlainText())
-        #     constants.commit()
-        # frame.deleteLater()
-        pass
-
-
-    def add_constant(self, constant_array, layout):
-        frame = self.get_config_item("")
-        layout.insertWidget(layout.count() - 1, frame)
