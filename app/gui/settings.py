@@ -83,7 +83,7 @@ class SettingsScreen(QWidget): # Экран настройки приложен�
         self.activities = []
 
         for category, cat in zip(config.keys(),
-                                 [self.staff, self.list_marks, self.activities]):
+                                 [self.staff, self.activities, self.list_marks]): # Заполнение полей данными из конфига
             frame = QFrame()
             frame.setObjectName("group_frame")
             layout = QVBoxLayout(frame)
@@ -118,3 +118,14 @@ class SettingsScreen(QWidget): # Экран настройки приложен�
                         border: 2px solid black;
                     }
                 ''')
+
+    def save_config(self):
+        staff = [item.item for item in self.staff if item.item != '' and item.active]
+        activities = [item.item for item in self.activities if item.item != '' and item.active]
+        list_marks = [item.item for item in self.list_marks if item.item != '' and item.active]
+
+        config.update({
+            "STAFF": staff,
+            "ACTIVITIES": activities,
+            "LIST MARKS": list_marks
+        })

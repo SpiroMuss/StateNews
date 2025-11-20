@@ -6,7 +6,7 @@ from app.config import system, config
 
 
 class MainScreen(QWidget): # Главный экрын приложения
-    def __init__(self, switch_callback):
+    def __init__(self, switch_callback): # Инициализация основного окна
         super().__init__()
 
         main_layout = QVBoxLayout()
@@ -53,7 +53,7 @@ class MainScreen(QWidget): # Главный экрын приложения
         for frame in self.timetable_frame.children()[1:]:
             frame.deleteLater()
 
-    def filter_schedule(self): # Фильтрация расписания согласно конфигу
+    def filter_schedule(self): # Фильтрация расписания согласно конфигу, создание визуальных групп
         for frame in self.timetable_frame.children()[1:]:
             frame.deleteLater()
         time_groups = time_sorting(self.schedule_text.toPlainText())
@@ -61,18 +61,19 @@ class MainScreen(QWidget): # Главный экрын приложения
             print("Не удалось получить временные группы.")
             return
 
-        for num, time_group in enumerate(time_groups):
+        for time_group in time_groups:
             frame = QFrame()
-            frame.setObjectName("group_frame")
+            frame.setObjectName("time_group_frame")
 
             group_layout = QVBoxLayout()
 
             name = QComboBox()
-            name.addItems(config.get('ACTIVITY'))
+            name.addItems(config.get('ACTIVITIES'))
             if len(time_group) > 1:
                 name.setCurrentIndex(0)
             elif len(time_group) == 1:
                 name.setCurrentIndex(1)
+            name.setEditable(True)
             group_layout.addWidget(name)
 
             for time in time_group:
@@ -91,7 +92,7 @@ class MainScreen(QWidget): # Главный экрын приложения
         ''')
 
     def copy_allocation(self):
-        pass
+        print(self.timetable_frame.children())
 
     def get_raw_text(self):
         data = get_clipboard_data()
