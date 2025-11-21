@@ -2,7 +2,6 @@ from PyQt5.QtWidgets import QMainWindow, QStackedWidget
 
 from app.gui.main import MainScreen
 from app.gui.settings import SettingsScreen
-from config import write_config, config
 
 
 class MainWindow(QMainWindow): # Окно приложения
@@ -26,10 +25,7 @@ class MainWindow(QMainWindow): # Окно приложения
 
     def switch_to_main(self):
         self.settings_screen.save_config()
-        print(config)
         self.stacked_widget.setCurrentWidget(self.main_screen)
 
     def closeEvent(self, event):
-        print(config)
         self.settings_screen.save_config()
-        write_config()

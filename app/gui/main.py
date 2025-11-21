@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushB
 from datetime import datetime
 
 from functions import get_clipboard_data, time_sorting
-from app.config import system, config
+from app.config import config
 
 
 class MainScreen(QWidget): # Главный экрын приложения

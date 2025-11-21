@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTextEdit, QFrame, QScrollArea, QLabel
 from functools import partial
+import json
 
-from app.config import config
+from app.config import config, write_config
 
 
 class ConfigItem(QFrame): # Элемент конфигурации
@@ -120,12 +121,10 @@ class SettingsScreen(QWidget): # Экран настройки приложен�
                 ''')
 
     def save_config(self):
-        staff = [item.item for item in self.staff if item.item != '' and item.active]
-        activities = [item.item for item in self.activities if item.item != '' and item.active]
-        list_marks = [item.item for item in self.list_marks if item.item != '' and item.active]
-
         config.update({
-            "STAFF": staff,
-            "ACTIVITIES": activities,
-            "LIST MARKS": list_marks
+            "STAFF": [item.item for item in self.staff if item.item != '' and item.active],
+            "ACTIVITIES": [item.item for item in self.activities if item.item != '' and item.active],
+            "LIST_MARKS": [item.item for item in self.list_marks if item.item != '' and item.active]
         })
+
+        json.dump(config, open('config.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=4)
