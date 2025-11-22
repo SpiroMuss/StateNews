@@ -1,8 +1,15 @@
-from datetime import datetime
+import os
 from PyQt5.QtWidgets import QTextEdit, QHBoxLayout, QPushButton, QFrame
 from functools import partial
+import requests
+import json
+from datetime import datetime
+from dotenv import load_dotenv
+load_dotenv()
 
 from config import config
+
+url = os.getenv("WEBHOOK")
 
 def get_clipboard_data():
     data = None
@@ -44,3 +51,22 @@ def time_sorting(schedule):
             print("Неотсортированная пара: ", i, j)
 
     return time_groups
+
+
+def send_allocation_header(date):
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    data = {
+        'content': f'# Список задач на {date}.{datetime.now().year}'
+    }
+
+    requests.post(url=url, headers=headers, data=json.dumps(data))
+
+def send_allocation(data):
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    requests.post(url=url, headers=headers, data=json.dumps(data))

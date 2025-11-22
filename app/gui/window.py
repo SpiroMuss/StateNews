@@ -25,6 +25,7 @@ class MainWindow(QMainWindow): # Окно приложения
 
     def switch_to_main(self):
         self.settings_screen.save_config()
+        self.main_screen.update_activities()
         self.stacked_widget.setCurrentWidget(self.main_screen)
 
     def closeEvent(self, event):

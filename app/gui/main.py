@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QFrame, QComboBox
 from datetime import datetime
 
-from functions import get_clipboard_data, time_sorting
+from functions import get_clipboard_data, time_sorting, send_allocation_header, send_allocation
 from app.config import config
 
 
@@ -37,11 +37,11 @@ class MainScreen(QWidget): # Главный экрын приложения
         self.filter_button.clicked.connect(self.filter_schedule)
         button_layout.addWidget(self.filter_button)
 
-        self.allocation_button = QPushButton("Распределение")
-        self.allocation_button.clicked.connect(self.copy_allocation)
+        self.allocation_button = QPushButton("Выслать распределение")
+        self.allocation_button.clicked.connect(self.send_allocation)
         button_layout.addWidget(self.allocation_button)
 
-        self.timetable_button = QPushButton("Расписание")
+        self.timetable_button = QPushButton("Скопировать расписание")
         button_layout.addWidget(self.timetable_button)
 
         main_layout.addLayout(button_layout)
@@ -91,11 +91,26 @@ class MainScreen(QWidget): # Главный экрын приложения
             }
         ''')
 
-    def copy_allocation(self):
-        print(self.timetable_frame.children())
+    def send_allocation(self):
+        send_allocation_header(self.schedule_text.toPlainText()[:self.schedule_text.toPlainText().find(' ')])
 
-    def get_raw_text(self):
+        for group in self.timetable_frame.children()[1:]:
+            print(group.children())
+            activity = group.children()[1].currentText()
+            times = []
+            for time in group.children()[2:]:
+                times.append(time.toPlainText())
+
+            message = {
+                'content': f'> {activity}\n> '+' - '.join(times)
+            }
+            send_allocation(message)
+
+    def get_raw_text(self): # Получение текста из буфера обмена
         data = get_clipboard_data()
         if data is not None:
             self.schedule_text.setText(data)
             self.filter_schedule()
+
+    def update_activities(self): # Обновление видов задач после внесения изменений в конфиг
+        pass
