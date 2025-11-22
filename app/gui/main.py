@@ -48,6 +48,7 @@ class MainScreen(QWidget): # Главный экрын приложения
         button_layout.addWidget(self.send_allocation_button)
 
         self.timetable_button = QPushButton("Скопировать расписание")
+        self.timetable_button.clicked.connect(self.copy_timetable)
         button_layout.addWidget(self.timetable_button)
 
         main_layout.addLayout(button_layout)
@@ -60,7 +61,6 @@ class MainScreen(QWidget): # Главный экрын приложения
         for frame in self.timetable_frame.children()[1:]:
             frame.deleteLater()
 
-
     def get_clipboard_text(self): # Получение текста из буфера обмена
         # if system == 'Windows':
         #     data = pyperclip.paste()
@@ -72,7 +72,6 @@ class MainScreen(QWidget): # Главный экрын приложения
         if data is not None and not "":
             self.schedule_text.setText(data)
             self.filter_schedule()
-
 
     def filter_schedule(self): # Фильтрация расписания согласно конфигу, создание визуальных групп
         for frame in self.timetable_frame.children()[1:]: # Очистка старых групп
@@ -135,6 +134,7 @@ class MainScreen(QWidget): # Главный экрын приложения
             }
         ''')
 
+
     def get_allocation(self): # Сборщик групп в одно сообщение для распределения
         date = self.schedule_text.toPlainText()[:self.schedule_text.toPlainText().find(' ')]
         title = f'# Список задач на {date}.{(datetime.now() + timedelta(days=1)).year}\n'
@@ -168,11 +168,23 @@ class MainScreen(QWidget): # Главный экрын приложения
             }
             requests.post(url=url, headers=headers, data=json.dumps(data))
 
-
     def copy_allocation(self): # Копирование распределения в буфер обмена
         title, tasks = self.get_allocation()
         if system == 'Windows':
             pyperclip.copy(title + '\n'.join(tasks))
 
-    def update_activities(self): # Обновление видов задач после внесения изменений в конфигF
-        pass
+
+    def copy_timetable(self):
+        date = self.schedule_text.toPlainText()[:self.schedule_text.toPlainText().find(' ')]
+        title = f'## Гос. волны Аппарата Правительства на {date}.{(datetime.now() + timedelta(days=1)).year}\n'
+
+        tasks = []
+        for group in self.timetable_frame.children()[1:]:
+            activity = group.children()[1].currentText()
+            times = []
+            for time in group.children()[2:]:
+                times.append(time.toPlainText())
+
+            tasks.append(f'{activity} | ' + ' - '.join(times))
+
+        pyperclip.copy(title + '```' + '\n'.join(tasks) + '```')
