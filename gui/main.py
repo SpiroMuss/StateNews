@@ -1,10 +1,14 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QFrame, QComboBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QFrame, QComboBox, QScrollArea
 from datetime import datetime, timedelta
 import requests
 import json
 import pyperclip
 
 from config import config, url, system
+
+
+class TimeGroup(QFrame):
+    pass
 
 
 class MainScreen(QWidget): # Главный экрын приложения
@@ -18,10 +22,13 @@ class MainScreen(QWidget): # Главный экрын приложения
         self.schedule_text = QTextEdit()
         text_layout.addWidget(self.schedule_text)
 
-        self.timetable_frame = QFrame()
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        self.timetable_widget = QWidget()
         self.timetable_layout = QVBoxLayout()
-        self.timetable_frame.setLayout(self.timetable_layout)
-        text_layout.addWidget(self.timetable_frame)
+        self.timetable_widget.setLayout(self.timetable_layout)
+        scroll_area.setWidget(self.timetable_widget)
+        text_layout.addWidget(scroll_area)
 
         main_layout.addLayout(text_layout)
 
@@ -58,7 +65,7 @@ class MainScreen(QWidget): # Главный экрын приложения
 
     def clear_schedule(self): # Очистка главного экрана от текста
         self.schedule_text.setText('')
-        for frame in self.timetable_frame.children()[1:]:
+        for frame in self.timetable_widget.children()[1:]:
             frame.deleteLater()
 
     def get_clipboard_text(self): # Получение текста из буфера обмена
@@ -72,7 +79,7 @@ class MainScreen(QWidget): # Главный экрын приложения
             self.filter_schedule()
 
     def filter_schedule(self): # Фильтрация расписания согласно конфигу, создание визуальных групп
-        for frame in self.timetable_frame.children()[1:]: # Очистка старых групп
+        for frame in self.timetable_widget.children()[1:]: # Очистка старых групп
             frame.deleteLater()
 
         # Поиск времени по сотрудникам
@@ -138,7 +145,7 @@ class MainScreen(QWidget): # Главный экрын приложения
         title = f'# Список задач на {date}.{(datetime.now() + timedelta(days=1)).year}\n'
 
         tasks = []
-        for group in self.timetable_frame.children()[1:]:
+        for group in self.timetable_widget.children()[1:]:
             activity = group.children()[1].currentText()
             times = []
             for time in group.children()[2:]:
@@ -150,6 +157,8 @@ class MainScreen(QWidget): # Главный экрын приложения
 
     def send_allocation(self): # Отправление распределения на Webhook
         title, tasks = self.get_allocation()
+        if not tasks:
+            return
 
         headers = {
             "Content-Type": "application/json",
