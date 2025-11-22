@@ -1,10 +1,13 @@
 import json
+import os
 
-try:
-    import win32clipboard
-    system = "WINDOWS"
-except ImportError:
-    system = None
+import platform
+system = platform.system()
+
+from dotenv import load_dotenv
+load_dotenv()
+
+url = os.getenv("WEBHOOK")
 
 
 config = json.load(open('config.json', encoding='utf-8'))

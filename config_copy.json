@@ -1,24 +1,13 @@
 {
-  "STAFF": [
-    "Morr Antwoord",
-    "Shisuya Antwoord",
-    "Maxim Antwoord",
-    "Nikolay Antwoord"
-  ],
-  "ACTIVITIES": [
-    "Мэрия ЛС | Набор",
-    "Мэрия ЛС | Лекция",
-    "Мэрия ЛС | Эл. Заявка"
-  ],
-  "LIST_MARKS": [
-    ":Number_1:",
-    ":Number_2:",
-    ":Number_3:",
-    ":Number_4:",
-    ":Number_5:",
-    ":Number_6:",
-    ":Number_7:",
-    ":Number_8:",
-    ":Number_9:"
-  ]
+    "STAFF": [
+        "Mor Antwoord",
+        "Shisha Antwoord",
+        "Maxim Antwoord",
+        "Nikolay Antwoord"
+    ],
+    "ACTIVITIES": [
+        "Мэрия ЛС | Набор",
+        "Мэрия ЛС | Лекция",
+        "Мэрия ЛС | Эл. Заявка"
+    ]
 }

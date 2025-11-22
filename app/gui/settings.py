@@ -80,11 +80,10 @@ class SettingsScreen(QWidget): # Экран настройки приложен�
         settings_layout = QHBoxLayout(settings_widget)
 
         self.staff = []
-        self.list_marks = []
         self.activities = []
 
         for category, cat in zip(config.keys(),
-                                 [self.staff, self.activities, self.list_marks]): # Заполнение полей данными из конфига
+                                 [self.staff, self.activities]): # Заполнение полей данными из конфига
             frame = QFrame()
             frame.setObjectName("group_frame")
             layout = QVBoxLayout(frame)
@@ -123,8 +122,7 @@ class SettingsScreen(QWidget): # Экран настройки приложен�
     def save_config(self):
         config.update({
             "STAFF": [item.item for item in self.staff if item.item != '' and item.active],
-            "ACTIVITIES": [item.item for item in self.activities if item.item != '' and item.active],
-            "LIST_MARKS": [item.item for item in self.list_marks if item.item != '' and item.active]
+            "ACTIVITIES": [item.item for item in self.activities if item.item != '' and item.active]
         })
 
         json.dump(config, open('config.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=4)

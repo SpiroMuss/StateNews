@@ -1,8 +1,10 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QFrame, QComboBox
-from datetime import datetime
+from datetime import datetime, timedelta
+import requests
+import json
+import pyperclip
 
-from functions import get_clipboard_data, time_sorting, send_allocation_header, send_allocation
-from app.config import config
+from app.config import config, url, system
 
 
 class MainScreen(QWidget): # Главный экрын приложения
@@ -37,9 +39,13 @@ class MainScreen(QWidget): # Главный экрын приложения
         self.filter_button.clicked.connect(self.filter_schedule)
         button_layout.addWidget(self.filter_button)
 
-        self.allocation_button = QPushButton("Выслать распределение")
-        self.allocation_button.clicked.connect(self.send_allocation)
-        button_layout.addWidget(self.allocation_button)
+        self.copy_allocation_button = QPushButton("Скопировать распределение")
+        self.copy_allocation_button.clicked.connect(self.copy_allocation)
+        button_layout.addWidget(self.copy_allocation_button)
+
+        self.send_allocation_button = QPushButton("Выслать распределение")
+        self.send_allocation_button.clicked.connect(self.send_allocation)
+        button_layout.addWidget(self.send_allocation_button)
 
         self.timetable_button = QPushButton("Скопировать расписание")
         button_layout.addWidget(self.timetable_button)
@@ -48,20 +54,58 @@ class MainScreen(QWidget): # Главный экрын приложения
 
         self.setLayout(main_layout)
 
+
     def clear_schedule(self): # Очистка главного экрана от текста
         self.schedule_text.setText('')
         for frame in self.timetable_frame.children()[1:]:
             frame.deleteLater()
 
+
+    def get_clipboard_text(self): # Получение текста из буфера обмена
+        # if system == 'Windows':
+        #     data = pyperclip.paste()
+        # else:
+        #     data = None
+        with open("schedule.txt", "r", encoding="utf-8") as file:
+            data = file.read()
+
+        if data is not None and not "":
+            self.schedule_text.setText(data)
+            self.filter_schedule()
+
+
     def filter_schedule(self): # Фильтрация расписания согласно конфигу, создание визуальных групп
-        for frame in self.timetable_frame.children()[1:]:
+        for frame in self.timetable_frame.children()[1:]: # Очистка старых групп
             frame.deleteLater()
-        time_groups = time_sorting(self.schedule_text.toPlainText())
-        if time_groups is None:
+
+        # Поиск времени по сотрудникам
+        timetable = []
+        for line in self.schedule_text.toPlainText().split('\n'):
+            for employee in config.get('STAFF'):
+                if line.rfind(employee) != -1:
+                    timetable.append(datetime.strptime(line[0:11], "%d.%m %H:%M"))
+
+        # Разделение на группы
+        try:
+            time_groups = [[timetable[0]]]
+        except IndexError:
+            time_groups = None
+        group = 0
+        for i, j in zip(timetable[0:-1], timetable[1:]):
+            if (j - i).total_seconds() == 1200:
+                time_groups[group].append(j)
+            elif (j - i).total_seconds() > 1200:
+                time_groups.append([j])
+                group += 1
+            else:
+                print("Непредвиденная ошибка в паре: ", i, j)
+
+
+        if time_groups is None: # Проверка наличия групп
             print("Не удалось получить временные группы.")
             return
 
-        for time_group in time_groups:
+        for time_group in time_groups: # Вывод групп в GUI
             frame = QFrame()
             frame.setObjectName("time_group_frame")
 
@@ -91,26 +135,44 @@ class MainScreen(QWidget): # Главный экрын приложения
             }
         ''')
 
-    def send_allocation(self):
-        send_allocation_header(self.schedule_text.toPlainText()[:self.schedule_text.toPlainText().find(' ')])
+    def get_allocation(self): # Сборщик групп в одно сообщение для распределения
+        date = self.schedule_text.toPlainText()[:self.schedule_text.toPlainText().find(' ')]
+        title = f'# Список задач на {date}.{(datetime.now() + timedelta(days=1)).year}\n'
 
+        tasks = []
         for group in self.timetable_frame.children()[1:]:
-            print(group.children())
             activity = group.children()[1].currentText()
             times = []
             for time in group.children()[2:]:
                 times.append(time.toPlainText())
 
-            message = {
-                'content': f'> {activity}\n> '+' - '.join(times)
+            tasks.append(f'> {activity}\n> ' + ' - '.join(times))
+
+        return title, tasks
+
+    def send_allocation(self): # Отправление распределения на Webhook
+        title, tasks = self.get_allocation()
+
+        headers = {
+            "Content-Type": "application/json",
+        }
+
+        data = {
+            'content': title
+        }
+        requests.post(url=url, headers=headers, data=json.dumps(data))
+
+        for task in tasks:
+            data = {
+                'content': task
             }
-            send_allocation(message)
+            requests.post(url=url, headers=headers, data=json.dumps(data))
 
-    def get_raw_text(self): # Получение текста из буфера обмена
-        data = get_clipboard_data()
-        if data is not None:
-            self.schedule_text.setText(data)
-            self.filter_schedule()
 
-    def update_activities(self): # Обновление видов задач после внесения изменений в конфиг
+    def copy_allocation(self): # Копирование распределения в буфер обмена
+        title, tasks = self.get_allocation()
+        if system == 'Windows':
+            pyperclip.copy(title + '\n'.join(tasks))
+
+    def update_activities(self): # Обновление видов задач после внесения изменений в конфигF
         pass

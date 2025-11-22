@@ -14,7 +14,7 @@ class MainWindow(QMainWindow): # Окно приложения
         self.setCentralWidget(self.stacked_widget)
 
         self.main_screen = MainScreen(self.switch_to_settings)
-        self.main_screen.get_raw_text()
+        self.main_screen.get_clipboard_text()
         self.stacked_widget.addWidget(self.main_screen)
 
         self.settings_screen = SettingsScreen(self.switch_to_main)

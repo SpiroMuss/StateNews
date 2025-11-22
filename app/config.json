@@ -1,16 +1,14 @@
 {
     "STAFF": [
         "Mor Antwoord",
-        "Shisuya Antwoord",
+        "Shisha Antwoord",
         "Maxim Antwoord",
-        "Nikolay Antwoord"
+        "Nikolay Antwoord",
+        "Shisuya Antwoord"
     ],
     "ACTIVITIES": [
-        "Набор АП в Мэрии ЛС",
-        "Электронная заявка в АП"
-    ],
-    "LIST_MARKS": [
-        "1. ",
-        "2. "
+        "Мэрия ЛС | Набор",
+        "Мэрия ЛС | Лекция",
+        "Мэрия ЛС | Эл. Заявка"
     ]
 }
