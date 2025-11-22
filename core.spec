@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['app\\core.py'],
+    ['core.py'],
     pathex=[],
     binaries=[],
-    datas=[('app/config.json', '.')],
+    datas=[('config.json', '.'), ('.env', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
