@@ -62,12 +62,10 @@ class MainScreen(QWidget): # Главный экрын приложения
             frame.deleteLater()
 
     def get_clipboard_text(self): # Получение текста из буфера обмена
-        # if system == 'Windows':
-        #     data = pyperclip.paste()
-        # else:
-        #     data = None
-        with open("schedule.txt", "r", encoding="utf-8") as file:
-            data = file.read()
+        if system == 'Windows':
+            data = pyperclip.paste()
+        else:
+            data = None
 
         if data is not None and not "":
             self.schedule_text.setText(data)
