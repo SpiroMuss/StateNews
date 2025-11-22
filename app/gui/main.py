@@ -4,7 +4,7 @@ import requests
 import json
 import pyperclip
 
-from app.config import config, url, system
+from config import config, url, system
 
 
 class MainScreen(QWidget): # Главный экрын приложения

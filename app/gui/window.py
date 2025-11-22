@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QStackedWidget
 
-from app.gui.main import MainScreen
-from app.gui.settings import SettingsScreen
+from gui.main import MainScreen
+from gui.settings import SettingsScreen
 
 
 class MainWindow(QMainWindow): # Окно приложения

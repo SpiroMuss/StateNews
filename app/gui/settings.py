@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTex
 from functools import partial
 import json
 
-from app.config import config, write_config
+from config import config, write_config
 
 
 class ConfigItem(QFrame): # Элемент конфигурации
