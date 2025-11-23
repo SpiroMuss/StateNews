@@ -3,11 +3,12 @@
         "Mor Antwoord",
         "Shisha Antwoord",
         "Maxim Antwoord",
-        "Nikolay Antwoord"
+        "Nikolay Antwoord",
+        "Ivan Notfound"
     ],
     "ACTIVITIES": [
-        "Мэрия ЛС | Набор",
         "Мэрия ЛС | Лекция",
+        "Мэрия ЛС | Набор",
         "Мэрия ЛС | Эл. Заявка"
     ]
 }

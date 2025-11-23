@@ -1,14 +1,37 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QFrame, QComboBox, QScrollArea
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QPushButton, QFrame, QComboBox, QScrollArea, \
+    QLabel
 from datetime import datetime, timedelta
 import requests
 import json
 import pyperclip
 
-from config import config, url, system
+from app.config import config, url, system
 
 
 class TimeGroup(QFrame):
-    pass
+    def __init__(self, time_group):
+        super().__init__()
+        self.setObjectName("Time_group_frame")
+        self.layout = QVBoxLayout(self)
+
+        self.activity = QComboBox()
+        self.activity.addItems(config.get("ACTIVITIES"))
+        if len(time_group) == 1:
+            self.activity.setCurrentIndex(0)
+        elif len(time_group) > 1:
+            self.activity.setCurrentIndex(1)
+        self.activity.setEditable(True)
+        self.layout.addWidget(self.activity)
+        self.times = []
+
+        for time in time_group:
+            time_frame = QFrame()
+            layout = QHBoxLayout()
+            time_label = QLabel(datetime.strftime(time, "%H:%M"))
+            layout.addWidget(time_label)
+            time_frame.setLayout(layout)
+            self.layout.addWidget(time_frame)
+
 
 
 class MainScreen(QWidget): # Главный экрын приложения
@@ -110,31 +133,11 @@ class MainScreen(QWidget): # Главный экрын приложения
             return
 
         for time_group in time_groups: # Вывод групп в GUI
-            frame = QFrame()
-            frame.setObjectName("time_group_frame")
-
-            group_layout = QVBoxLayout()
-
-            name = QComboBox()
-            name.addItems(config.get('ACTIVITIES'))
-            if len(time_group) > 1:
-                name.setCurrentIndex(0)
-            elif len(time_group) == 1:
-                name.setCurrentIndex(1)
-            name.setEditable(True)
-            group_layout.addWidget(name)
-
-            for time in time_group:
-                line = QTextEdit()
-                line.setText(datetime.strftime(time, "%H:%M"))
-                line.setReadOnly(True)
-                group_layout.addWidget(line)
-
-            frame.setLayout(group_layout)
+            frame = TimeGroup(time_group)
             self.timetable_layout.addWidget(frame)
 
         self.setStyleSheet('''
-            QFrame#group_frame {
+            QFrame#Time_group_frame {
                 border: 1px solid black;
             }
         ''')
@@ -186,7 +189,7 @@ class MainScreen(QWidget): # Главный экрын приложения
         title = f'## Гос. волны Аппарата Правительства на {date}.{(datetime.now() + timedelta(days=1)).year}\n'
 
         tasks = []
-        for group in self.timetable_frame.children()[1:]:
+        for group in self.timetable_widget.children()[1:]:
             activity = group.children()[1].currentText()
             times = []
             for time in group.children()[2:]:
