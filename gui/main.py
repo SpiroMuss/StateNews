@@ -4,11 +4,15 @@ from datetime import datetime, timedelta
 import requests
 import json
 import pyperclip
+from functools import partial
 
 from app.config import config, url, system
 
 
-class TimeGroup(QFrame):
+def delete_time(btn):
+    btn.parent().deleteLater()
+
+class TimeGroup(QFrame): # Временная группа активности GUI
     def __init__(self, time_group):
         super().__init__()
         self.setObjectName("Time_group_frame")
@@ -24,17 +28,25 @@ class TimeGroup(QFrame):
         self.layout.addWidget(self.activity)
         self.times = []
 
-        for time in time_group:
+        for time in time_group: # Создание элемента времени
             time_frame = QFrame()
+            time_frame.setObjectName('Ну это время, ебан')
             layout = QHBoxLayout()
+
             time_label = QLabel(datetime.strftime(time, "%H:%M"))
             layout.addWidget(time_label)
+
+            del_btn = QPushButton()
+            del_btn.setText("Удалить")
+            del_btn.clicked.connect(partial(delete_time, del_btn))
+            layout.addWidget(del_btn)
+
             time_frame.setLayout(layout)
             self.layout.addWidget(time_frame)
+            self.times.append(layout)
 
 
-
-class MainScreen(QWidget): # Главный экрын приложения
+class MainScreen(QWidget): # Главный экран приложения
     def __init__(self, switch_callback): # Инициализация основного окна
         super().__init__()
 
@@ -50,6 +62,9 @@ class MainScreen(QWidget): # Главный экрын приложения
         self.timetable_widget = QWidget()
         self.timetable_layout = QVBoxLayout()
         self.timetable_widget.setLayout(self.timetable_layout)
+        self.time_groups = []
+        self.up_btns = []
+        self.down_btns = []
         scroll_area.setWidget(self.timetable_widget)
         text_layout.addWidget(scroll_area)
 
@@ -132,9 +147,12 @@ class MainScreen(QWidget): # Главный экрын приложения
             print("Не удалось получить временные группы.")
             return
 
-        for time_group in time_groups: # Вывод групп в GUI
+        for time_group in time_groups: # Создание, вывод групп в GUI
             frame = TimeGroup(time_group)
+            self.time_groups.append(frame)
             self.timetable_layout.addWidget(frame)
+
+        self.update_btns()
 
         self.setStyleSheet('''
             QFrame#Time_group_frame {
@@ -142,6 +160,41 @@ class MainScreen(QWidget): # Главный экрын приложения
             }
         ''')
 
+    def update_btns(self):
+
+        for number, group in enumerate(self.time_groups):
+            up_btn = QPushButton()
+            up_btn.setText("Поднять")
+            up_btn.clicked.connect(partial(self.up_time, number))
+            group.times[0].addWidget(up_btn)
+            self.up_btns.append(up_btn)
+
+            down_btn = QPushButton()
+            down_btn.setText("Опустить")
+            down_btn.clicked.connect(partial(self.down_time, number))
+            group.times[-1].addWidget(down_btn)
+            self.down_btns.append(down_btn)
+
+    def up_time(self, num):
+        if num == 0:
+            pass
+
+        else:
+            label_frame = self.time_groups[num].times[0].parent()
+            self.time_groups[num].children()[0].removeWidget(label_frame)
+            self.time_groups[num-1].children()[0].addWidget(label_frame)
+
+        # self.update_btns()
+
+    def down_time(self, num):
+        if num == len(self.time_groups) - 1:
+            pass
+        else:
+            label_frame = self.time_groups[num].times[-1].parent()
+            self.time_groups[num].children()[0].removeWidget(label_frame)
+            self.time_groups[num + 1].children()[0].insertWidget(1, label_frame)
+
+        # self.update_btns()
 
     def get_allocation(self): # Сборщик групп в одно сообщение для распределения
         date = self.schedule_text.toPlainText()[:self.schedule_text.toPlainText().find(' ')]
