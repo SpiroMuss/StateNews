@@ -26,11 +26,9 @@ class TimeGroup(QFrame): # Временная группа активности 
             self.activity.setCurrentIndex(1)
         self.activity.setEditable(True)
         self.layout.addWidget(self.activity)
-        self.times = []
 
         for time in time_group: # Создание элемента времени
             time_frame = QFrame()
-            time_frame.setObjectName('Ну это время, ебан')
             layout = QHBoxLayout()
 
             time_label = QLabel(datetime.strftime(time, "%H:%M"))
@@ -43,7 +41,14 @@ class TimeGroup(QFrame): # Временная группа активности 
 
             time_frame.setLayout(layout)
             self.layout.addWidget(time_frame)
-            self.times.append(layout)
+
+    @property
+    def times(self):
+        t = []
+        for time in self.children()[2:]:
+            t.append(time)
+        return sorted(t, key=lambda x: datetime.strptime(x.children()[1].text(), "%H:%M"))
+
 
 
 class MainScreen(QWidget): # Главный экран приложения
@@ -152,7 +157,7 @@ class MainScreen(QWidget): # Главный экран приложения
             self.time_groups.append(frame)
             self.timetable_layout.addWidget(frame)
 
-        self.update_btns()
+        self.place_btns()
 
         self.setStyleSheet('''
             QFrame#Time_group_frame {
@@ -160,52 +165,104 @@ class MainScreen(QWidget): # Главный экран приложения
             }
         ''')
 
-    def update_btns(self):
 
-        for number, group in enumerate(self.time_groups):
-            up_btn = QPushButton()
-            up_btn.setText("Поднять")
-            up_btn.clicked.connect(partial(self.up_time, number))
-            group.times[0].addWidget(up_btn)
-            self.up_btns.append(up_btn)
-
-            down_btn = QPushButton()
-            down_btn.setText("Опустить")
-            down_btn.clicked.connect(partial(self.down_time, number))
-            group.times[-1].addWidget(down_btn)
-            self.down_btns.append(down_btn)
-
-    def up_time(self, num):
-        if num == 0:
-            pass
+    def up_time(self, group_num):
+        times = self.time_groups[group_num].times
+        time = times[0]
+        if len(times) == 1:
+            time.setParent(self.time_groups[group_num - 1])
+            self.time_groups[group_num - 1].layout.addWidget(time)
+            time_group = self.time_groups.pop(group_num)
+            time_group.deleteLater()
 
         else:
-            label_frame = self.time_groups[num].times[0].parent()
-            self.time_groups[num].children()[0].removeWidget(label_frame)
-            self.time_groups[num-1].children()[0].addWidget(label_frame)
+            if group_num == 0:
+                new_group = TimeGroup([])
+                new_group.setParent(self.timetable_widget)
+                self.timetable_layout.insertWidget(0, new_group)
+                time.setParent(new_group)
+                new_group.layout.addWidget(time)
+                self.time_groups.insert(0, new_group)
 
-        # self.update_btns()
+            else:
+                time.setParent(self.time_groups[group_num - 1])
+                self.time_groups[group_num - 1].layout.addWidget(time)
 
-    def down_time(self, num):
-        if num == len(self.time_groups) - 1:
-            pass
+        self.place_btns()
+
+    def down_time(self, group_num):
+        times = self.time_groups[group_num].times
+        time = times[-1]
+        if len(times) == 1:
+            time.setParent(self.time_groups[group_num + 1])
+            self.time_groups[group_num + 1].layout.insertWidget(1, time)
+            time_group = self.time_groups.pop(group_num)
+            time_group.deleteLater()
+
         else:
-            label_frame = self.time_groups[num].times[-1].parent()
-            self.time_groups[num].children()[0].removeWidget(label_frame)
-            self.time_groups[num + 1].children()[0].insertWidget(1, label_frame)
+            if group_num == len(self.time_groups) - 1:
+                new_group = TimeGroup([])
+                new_group.setParent(self.timetable_widget)
+                self.timetable_layout.addWidget(new_group)
+                time.setParent(new_group)
+                new_group.layout.insertWidget(1, time)
+                self.time_groups.append(new_group)
 
-        # self.update_btns()
+            else:
+                time.setParent(self.time_groups[group_num + 1])
+                self.time_groups[group_num + 1].layout.insertWidget(1, time)
+
+        self.place_btns()
+
+    def create_up_btn(self, time, group_num):
+        up_btn = QPushButton()
+        up_btn.setText("Поднять")
+        up_btn.clicked.connect(partial(self.up_time, group_num))
+        time.layout().addWidget(up_btn)
+        self.up_btns.append(up_btn)
+
+    def create_down_btn(self, time, group_num):
+        down_btn = QPushButton()
+        down_btn.setText("Опустить")
+        down_btn.clicked.connect(partial(self.down_time, group_num))
+        time.layout().addWidget(down_btn)
+        self.down_btns.append(down_btn)
+
+    def place_btns(self):
+        for enum, group_frame in enumerate(self.time_groups):
+            times = group_frame.times
+            for time in times:
+                if len(time.children()) > 3:
+                    for item in time.children()[3:]:
+                        item.setParent(None)
+                        item.deleteLater()
+
+            if len(times) == 1:
+                if enum == 0:
+                    self.create_down_btn(times[-1], enum)
+
+                elif enum == len(self.time_groups) - 1:
+                    self.create_up_btn(times[0], enum)
+
+                else:
+                    self.create_up_btn(times[0], enum)
+                    self.create_down_btn(times[-1], enum)
+
+            elif len(times) > 1:
+                self.create_up_btn(times[0], enum)
+                self.create_down_btn(times[-1], enum)
+
 
     def get_allocation(self): # Сборщик групп в одно сообщение для распределения
         date = self.schedule_text.toPlainText()[:self.schedule_text.toPlainText().find(' ')]
         title = f'# Список задач на {date}.{(datetime.now() + timedelta(days=1)).year}\n'
 
         tasks = []
-        for group in self.timetable_widget.children()[1:]:
+        for group in self.time_groups:
             activity = group.children()[1].currentText()
             times = []
-            for time in group.children()[2:]:
-                times.append(time.toPlainText())
+            for time in group.times:
+                times.append(time.children()[1].text())
 
             tasks.append(f'> {activity}\n> ' + ' - '.join(times))
 
@@ -242,11 +299,11 @@ class MainScreen(QWidget): # Главный экран приложения
         title = f'## Гос. волны Аппарата Правительства на {date}.{(datetime.now() + timedelta(days=1)).year}\n'
 
         tasks = []
-        for group in self.timetable_widget.children()[1:]:
+        for group in self.time_groups:
             activity = group.children()[1].currentText()
             times = []
-            for time in group.children()[2:]:
-                times.append(time.toPlainText())
+            for time in group.times:
+                times.append(time.children()[1].text())
 
             tasks.append(f'{activity} | ' + ' - '.join(times))
 
