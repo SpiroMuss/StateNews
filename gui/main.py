@@ -108,8 +108,10 @@ class MainScreen(QWidget): # Главный экран приложения
 
     def clear_schedule(self): # Очистка главного экрана от текста
         self.schedule_text.setText('')
-        for frame in self.timetable_widget.children()[1:]:
-            frame.deleteLater()
+        for i in range(len(self.time_groups)):
+            group = self.time_groups.pop()
+            group.setParent(None)
+            group.deleteLater()
 
     def get_clipboard_text(self): # Получение текста из буфера обмена
         if system == 'Windows':
@@ -122,8 +124,10 @@ class MainScreen(QWidget): # Главный экран приложения
             self.filter_schedule()
 
     def filter_schedule(self): # Фильтрация расписания согласно конфигу, создание визуальных групп
-        for frame in self.timetable_widget.children()[1:]: # Очистка старых групп
-            frame.deleteLater()
+        for i in range(len(self.time_groups)):
+            group = self.time_groups.pop()
+            group.setParent(None)
+            group.deleteLater()
 
         # Поиск времени по сотрудникам
         timetable = []
